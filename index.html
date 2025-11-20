@@ -1,104 +1,459 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-CN">
 <head>
-<meta charset="UTF-8" />
-<title>三體運動模擬器</title>
-<style>
-    body {
-        margin: 0;
-        background: #000;
-        color: white;
-        text-align: center;
-        font-family: sans-serif;
-    }
-    canvas {
-        background: black;
-        display: block;
-        margin: 0 auto;
-    }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>三体运动模拟器</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #0a0a2a;
+            color: #e0e0ff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            color: #4fc3f7;
+            text-shadow: 0 0 10px rgba(79, 195, 247, 0.5);
+        }
+        
+        .subtitle {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #b3e5fc;
+        }
+        
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            max-width: 1200px;
+        }
+        
+        #simulationCanvas {
+            border: 2px solid #4fc3f7;
+            border-radius: 8px;
+            background-color: #000011;
+            box-shadow: 0 0 20px rgba(79, 195, 247, 0.3);
+        }
+        
+        .controls {
+            background-color: #1a1a3a;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+            min-width: 300px;
+            max-width: 400px;
+        }
+        
+        .control-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #b3e5fc;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            margin-bottom: 5px;
+        }
+        
+        .value-display {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9em;
+            color: #e0e0ff;
+        }
+        
+        button {
+            background-color: #4fc3f7;
+            color: #0a0a2a;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        button:hover {
+            background-color: #29b6f6;
+        }
+        
+        button:active {
+            background-color: #0288d1;
+        }
+        
+        .presets {
+            margin-top: 15px;
+        }
+        
+        .body-info {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+        
+        .body-color {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        
+        .info-panel {
+            margin-top: 20px;
+            background-color: #1a1a3a;
+            padding: 15px;
+            border-radius: 8px;
+            max-width: 800px;
+        }
+        
+        .info-panel h3 {
+            color: #4fc3f7;
+            margin-top: 0;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .controls {
+                width: 100%;
+                max-width: 500px;
+            }
+        }
+    </style>
 </head>
 <body>
-<h2>三體運動模擬器</h2>
-<canvas id="sim" width="700" height="700"></canvas>
+    <h1>三体运动模拟器</h1>
+    <div class="subtitle">基于牛顿万有引力定律的三体系统运动模拟</div>
+    
+    <div class="container">
+        <canvas id="simulationCanvas" width="600" height="600"></canvas>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label for="timeStep">时间步长</label>
+                <input type="range" id="timeStep" min="0.001" max="0.1" step="0.001" value="0.01">
+                <div class="value-display">
+                    <span>0.001</span>
+                    <span id="timeStepValue">0.01</span>
+                    <span>0.1</span>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <label for="gravity">引力常数</label>
+                <input type="range" id="gravity" min="0.1" max="2" step="0.1" value="1">
+                <div class="value-display">
+                    <span>0.1</span>
+                    <span id="gravityValue">1</span>
+                    <span>2</span>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <label for="trailLength">轨迹长度</label>
+                <input type="range" id="trailLength" min="100" max="2000" step="100" value="800">
+                <div class="value-display">
+                    <span>100</span>
+                    <span id="trailLengthValue">800</span>
+                    <span>2000</span>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <button id="startBtn">开始模拟</button>
+                <button id="pauseBtn">暂停</button>
+                <button id="resetBtn">重置</button>
+            </div>
+            
+            <div class="presets">
+                <button id="preset1">稳定轨道</button>
+                <button id="preset2">混沌系统</button>
+                <button id="preset3">8字形轨道</button>
+            </div>
+            
+            <div class="body-info">
+                <div><span class="body-color" style="background-color: #ff5252;"></span> 天体 1</div>
+                <div><span class="body-color" style="background-color: #4caf50;"></span> 天体 2</div>
+                <div><span class="body-color" style="background-color: #2196f3;"></span> 天体 3</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="info-panel">
+        <h3>关于三体问题</h3>
+        <p>三体问题是天体力学中的基本力学模型，研究三个质量、初始位置和初始速度都是任意的可视为质点的天体，在相互之间万有引力作用下的运动规律问题。</p>
+        <p>三体问题是一个混沌系统，对初始条件极其敏感，微小的变化可能导致系统长期演化的巨大差异。</p>
+        <p>本模拟器使用数值方法（欧拉积分）求解三体运动方程，展示了三种不同的初始条件预设。</p>
+    </div>
 
-<script>
-const canvas = document.getElementById("sim");
-const ctx = canvas.getContext("2d");
-
-//--- 參數設定 ---
-const G = 1; // 萬有引力常數（放大版）
-const dt = 0.01; // 時間步長
-
-// 三個天體初始設定（位置, 速度, 質量）
-let bodies = [
-    { x: -150, y: 0, vx: 0, vy: 1.2, m: 12, color: "red" },
-    { x: 150,  y: 0, vx: 0, vy: -1.2, m: 12, color: "yellow" },
-    { x: 0,    y: 200, vx: 1.5, vy: 0, m: 10, color: "cyan" }
-];
-
-// 計算三體間引力
-function computeForces() {
-    for (let i = 0; i < bodies.length; i++) {
-        let fx = 0, fy = 0;
-
-        for (let j = 0; j < bodies.length; j++) {
-            if (i === j) continue;
-
-            let dx = bodies[j].x - bodies[i].x;
-            let dy = bodies[j].y - bodies[i].y;
-            let r2 = dx * dx + dy * dy;
-            let r = Math.sqrt(r2);
-
-            let f = (G * bodies[i].m * bodies[j].m) / (r2);
-
-            fx += f * dx / r;
-            fy += f * dy / r;
+    <script>
+        // 获取Canvas元素和上下文
+        const canvas = document.getElementById('simulationCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // 获取控制元素
+        const timeStepSlider = document.getElementById('timeStep');
+        const gravitySlider = document.getElementById('gravity');
+        const trailLengthSlider = document.getElementById('trailLength');
+        const timeStepValue = document.getElementById('timeStepValue');
+        const gravityValue = document.getElementById('gravityValue');
+        const trailLengthValue = document.getElementById('trailLengthValue');
+        const startBtn = document.getElementById('startBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const preset1Btn = document.getElementById('preset1');
+        const preset2Btn = document.getElementById('preset2');
+        const preset3Btn = document.getElementById('preset3');
+        
+        // 模拟参数
+        let timeStep = parseFloat(timeStepSlider.value);
+        let gravityConstant = parseFloat(gravitySlider.value);
+        let trailLength = parseInt(trailLengthSlider.value);
+        let isRunning = false;
+        let animationId = null;
+        
+        // 更新显示的值
+        timeStepSlider.addEventListener('input', () => {
+            timeStep = parseFloat(timeStepSlider.value);
+            timeStepValue.textContent = timeStep.toFixed(3);
+        });
+        
+        gravitySlider.addEventListener('input', () => {
+            gravityConstant = parseFloat(gravitySlider.value);
+            gravityValue.textContent = gravityConstant.toFixed(1);
+        });
+        
+        trailLengthSlider.addEventListener('input', () => {
+            trailLength = parseInt(trailLengthSlider.value);
+            trailLengthValue.textContent = trailLength;
+        });
+        
+        // 天体类
+        class Body {
+            constructor(x, y, vx, vy, mass, color, radius) {
+                this.x = x;
+                this.y = y;
+                this.vx = vx;
+                this.vy = vy;
+                this.mass = mass;
+                this.color = color;
+                this.radius = radius;
+                this.trail = [];
+            }
+            
+            // 计算与其他天体的引力
+            calculateForce(otherBody) {
+                const dx = otherBody.x - this.x;
+                const dy = otherBody.y - this.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                // 防止距离过小导致数值不稳定
+                const safeDistance = Math.max(distance, 20);
+                
+                const force = (gravityConstant * this.mass * otherBody.mass) / (safeDistance * safeDistance);
+                const angle = Math.atan2(dy, dx);
+                
+                return {
+                    fx: force * Math.cos(angle),
+                    fy: force * Math.sin(angle)
+                };
+            }
+            
+            // 更新位置和速度
+            update(bodies, dt) {
+                let fx = 0, fy = 0;
+                
+                // 计算所有其他天体对当前天体的合力
+                for (const body of bodies) {
+                    if (body !== this) {
+                        const force = this.calculateForce(body);
+                        fx += force.fx;
+                        fy += force.fy;
+                    }
+                }
+                
+                // 计算加速度 (F = ma => a = F/m)
+                const ax = fx / this.mass;
+                const ay = fy / this.mass;
+                
+                // 更新速度
+                this.vx += ax * dt;
+                this.vy += ay * dt;
+                
+                // 更新位置
+                this.x += this.vx * dt;
+                this.y += this.vy * dt;
+                
+                // 更新轨迹
+                this.trail.push({x: this.x, y: this.y});
+                if (this.trail.length > trailLength) {
+                    this.trail.shift();
+                }
+            }
+            
+            // 绘制天体和轨迹
+            draw() {
+                // 绘制轨迹
+                ctx.beginPath();
+                ctx.moveTo(this.trail[0].x, this.trail[0].y);
+                for (let i = 1; i < this.trail.length; i++) {
+                    ctx.lineTo(this.trail[i].x, this.trail[i].y);
+                }
+                ctx.strokeStyle = this.color + '80'; // 半透明
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                
+                // 绘制天体
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                
+                // 绘制光晕效果
+                const gradient = ctx.createRadialGradient(
+                    this.x, this.y, this.radius,
+                    this.x, this.y, this.radius * 2
+                );
+                gradient.addColorStop(0, this.color + '80');
+                gradient.addColorStop(1, this.color + '00');
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius * 2, 0, Math.PI * 2);
+                ctx.fillStyle = gradient;
+                ctx.fill();
+            }
         }
-
-        bodies[i].fx = fx;
-        bodies[i].fy = fy;
-    }
-}
-
-// 更新位置速度
-function updateBodies() {
-    for (let b of bodies) {
-        b.vx += (b.fx / b.m) * dt;
-        b.vy += (b.fy / b.m) * dt;
-
-        b.x += b.vx;
-        b.y += b.vy;
-    }
-}
-
-// 繪製畫面
-function drawBodies() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // 平移中心到畫布中心
-    ctx.save();
-    ctx.translate(canvas.width / 2, canvas.height / 2);
-
-    for (let b of bodies) {
-        ctx.beginPath();
-        ctx.fillStyle = b.color;
-        ctx.arc(b.x, b.y, 8, 0, Math.PI * 2);
-        ctx.fill();
-    }
-
-    ctx.restore();
-}
-
-// 主迴圈
-function loop() {
-    computeForces();
-    updateBodies();
-    drawBodies();
-    requestAnimationFrame(loop);
-}
-
-loop();
-</script>
+        
+        // 创建三个天体
+        let bodies = [];
+        
+        // 初始化函数
+        function initBodies(preset = 1) {
+            bodies = [];
+            
+            switch(preset) {
+                case 1: // 稳定轨道
+                    bodies.push(new Body(300, 200, 0, 1.5, 100, '#ff5252', 10));
+                    bodies.push(new Body(200, 400, 1.5, 0, 100, '#4caf50', 10));
+                    bodies.push(new Body(400, 400, -1.5, 0, 100, '#2196f3', 10));
+                    break;
+                    
+                case 2: // 混沌系统
+                    bodies.push(new Body(300, 300, 0, 0, 100, '#ff5252', 12));
+                    bodies.push(new Body(200, 300, 0, 1.2, 100, '#4caf50', 10));
+                    bodies.push(new Body(400, 300, 0, -1.2, 100, '#2196f3', 8));
+                    break;
+                    
+                case 3: // 8字形轨道
+                    bodies.push(new Body(250, 300, 0.347111, 0.532728, 100, '#ff5252', 10));
+                    bodies.push(new Body(350, 300, 0.347111, 0.532728, 100, '#4caf50', 10));
+                    bodies.push(new Body(300, 400, -0.694222, -1.065456, 100, '#2196f3', 10));
+                    break;
+            }
+        }
+        
+        // 初始化
+        initBodies(1);
+        
+        // 动画循环
+        function animate() {
+            if (!isRunning) return;
+            
+            // 清除画布
+            ctx.fillStyle = '#000011';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // 更新和绘制所有天体
+            for (const body of bodies) {
+                body.update(bodies, timeStep);
+                body.draw();
+            }
+            
+            animationId = requestAnimationFrame(animate);
+        }
+        
+        // 按钮事件
+        startBtn.addEventListener('click', () => {
+            if (!isRunning) {
+                isRunning = true;
+                animate();
+            }
+        });
+        
+        pauseBtn.addEventListener('click', () => {
+            isRunning = false;
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+        });
+        
+        resetBtn.addEventListener('click', () => {
+            isRunning = false;
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+            initBodies(1);
+            drawFrame();
+        });
+        
+        preset1Btn.addEventListener('click', () => {
+            isRunning = false;
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+            initBodies(1);
+            drawFrame();
+        });
+        
+        preset2Btn.addEventListener('click', () => {
+            isRunning = false;
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+            initBodies(2);
+            drawFrame();
+        });
+        
+        preset3Btn.addEventListener('click', () => {
+            isRunning = false;
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+            initBodies(3);
+            drawFrame();
+        });
+        
+        // 绘制单帧
+        function drawFrame() {
+            ctx.fillStyle = '#000011';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            for (const body of bodies) {
+                body.draw();
+            }
+        }
+        
+        // 初始绘制
+        drawFrame();
+    </script>
 </body>
 </html>
