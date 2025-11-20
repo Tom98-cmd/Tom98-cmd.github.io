@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<title>三體運動模擬器</title>
+<style>
+    body {
+        margin: 0;
+        background: #000;
+        color: white;
+        text-align: center;
+        font-family: sans-serif;
+    }
+    canvas {
+        background: black;
+        display: block;
+        margin: 0 auto;
+    }
+</style>
+</head>
+<body>
+<h2>三體運動模擬器</h2>
+<canvas id="sim" width="700" height="700"></canvas>
+
+<script>
+const canvas = document.getElementById("sim");
+const ctx = canvas.getContext("2d");
+
+//--- 參數設定 ---
+const G = 1; // 萬有引力常數（放大版）
+const dt = 0.01; // 時間步長
+
+// 三個天體初始設定（位置, 速度, 質量）
+let bodies = [
+    { x: -150, y: 0, vx: 0, vy: 1.2, m: 12, color: "red" },
+    { x: 150,  y: 0, vx: 0, vy: -1.2, m: 12, color: "yellow" },
+    { x: 0,    y: 200, vx: 1.5, vy: 0, m: 10, color: "cyan" }
+];
+
+// 計算三體間引力
+function computeForces() {
+    for (let i = 0; i < bodies.length; i++) {
+        let fx = 0, fy = 0;
+
+        for (let j = 0; j < bodies.length; j++) {
+            if (i === j) continue;
+
+            let dx = bodies[j].x - bodies[i].x;
+            let dy = bodies[j].y - bodies[i].y;
+            let r2 = dx * dx + dy * dy;
+            let r = Math.sqrt(r2);
+
+            let f = (G * bodies[i].m * bodies[j].m) / (r2);
+
+            fx += f * dx / r;
+            fy += f * dy / r;
+        }
+
+        bodies[i].fx = fx;
+        bodies[i].fy = fy;
+    }
+}
+
+// 更新位置速度
+function updateBodies() {
+    for (let b of bodies) {
+        b.vx += (b.fx / b.m) * dt;
+        b.vy += (b.fy / b.m) * dt;
+
+        b.x += b.vx;
+        b.y += b.vy;
+    }
+}
+
+// 繪製畫面
+function drawBodies() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // 平移中心到畫布中心
+    ctx.save();
+    ctx.translate(canvas.width / 2, canvas.height / 2);
+
+    for (let b of bodies) {
+        ctx.beginPath();
+        ctx.fillStyle = b.color;
+        ctx.arc(b.x, b.y, 8, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    ctx.restore();
+}
+
+// 主迴圈
+function loop() {
+    computeForces();
+    updateBodies();
+    drawBodies();
+    requestAnimationFrame(loop);
+}
+
+loop();
+</script>
+</body>
+</html>
